@@ -79,3 +79,4 @@ def retire(aws_account_number: str, region: str, managed_name: str, interactive:
         click.echo('{} Done!'.format(log_prefix()))
     else:
         click.echo('{} No instance found in stage {}. Not proceeding.'.format(log_prefix(), ECHO_RETIRE_STAGE))
+        os.exit(1)
