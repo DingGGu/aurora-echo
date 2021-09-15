@@ -37,12 +37,12 @@ except Exception:
 
 
 class JSONFileLoader2(object):
-
     """Loader JSON files.
 
     This class can load the default format of models, which is a JSON file.
 
     """
+
     def exists(self, file_path: str):
         """Checks if the file exists.
 
@@ -152,35 +152,8 @@ def list_api_versions(self, service_name: str, type_name: str):
     return sorted(known_api_versions)
 
 
-def patch_ca_certs():
-    """
-    Boto needs an actual file path for the cacerts.pem so we extract it from
-    inside the egg. If it's been overridden by Boto 3's REQUESTS_CA_BUNDLE
-    setting then just skip this patch.
-    """
-
-    # set the certificate to what requests bundles unless it's already overridden
-    ca_bundle = os.environ.get('REQUESTS_CA_BUNDLE')
-    if ca_bundle is None:
-        # extract the cacerts.pem into a temp directory
-        cert_dir = tempfile.mkdtemp(prefix='cacerts')
-        cert_file = os.path.join(cert_dir, 'cacerts.pem')
-        with open(cert_file, 'wb') as cf:
-            cf.write(EGG.read('botocore/vendored/requests/cacert.pem'))
-        os.environ['REQUESTS_CA_BUNDLE'] = cert_file
-        atexit.register(clean_ca_certs, cert_dir)
-
-
-def clean_ca_certs(cert_dir):
-    """Delete the temporary cacerts and directory"""
-    cert_file = os.path.join(cert_dir, 'cacerts.pem')
-    os.remove(cert_file)
-    os.rmdir(cert_dir)
-
-
 # monkeypatch the original loaders to handle being inside of an eggsecutable
 if EGG:
-    patch_ca_certs()
     botocore.loaders.Loader.FILE_LOADER_CLASS = JSONFileLoader2
     botocore.loaders.Loader.load_data = load_data
     botocore.loaders.Loader.list_available_services = list_available_services
