@@ -32,5 +32,5 @@ $(VIRTUALENV) $(ACTIVATE) :
 		echo "Existing virtualenv found. Skipping virtualenv creation."; \
 	else \
 		virtualenv -p `which $(PYTHON_INTERPRETER)` $(VIRTUALENV); \
-		. $(ACTIVATE); pip install .; \
+		. $(ACTIVATE); pipenv install --deploy; \
 	fi
