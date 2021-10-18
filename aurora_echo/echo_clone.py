@@ -40,7 +40,7 @@ log_prefix = log_prefix_factory(ECHO_CLONE_COMMAND)
 
 
 def collect_clone_params(source_cluster_name: str, new_cluster_name: str, db_subnet_group_name: str,
-                         vpc_security_group_id: list, tags: list):
+                         db_cluster_parameter_group_name: str, vpc_security_group_id: list, tags: list):
     """
     Convert parameters into a dict of known values appropriate to be used in an RDS API call.
 
@@ -69,6 +69,9 @@ def collect_clone_params(source_cluster_name: str, new_cluster_name: str, db_sub
     if vpc_security_group_id:
         params['VpcSecurityGroupIds'] = [vpc for vpc in vpc_security_group_id]
 
+    if db_cluster_parameter_group_name:
+        params['DBClusterParameterGroupName'] = db_cluster_parameter_group_name
+
     # Our tags indicating the instance is managed, plus optional user-defined tags
     params['Tags'] = tags  # a list of dicts
 
@@ -76,7 +79,7 @@ def collect_clone_params(source_cluster_name: str, new_cluster_name: str, db_sub
 
 
 def collect_instance_params(cluster_identifier: str, new_instance_name: str, engine: str, db_instance_class: str,
-                           availability_zone: str, tags: list, db_parameter_group_name: str):
+                            availability_zone: str, tags: list, db_parameter_group_name: str):
     """
     Convert parameters into a dict of known values appropriate to be used in an RDS API call.
     :return: params
@@ -86,7 +89,8 @@ def collect_instance_params(cluster_identifier: str, new_instance_name: str, eng
 
     # Required params
     params['DBInstanceIdentifier'] = new_instance_name
-    params['DBClusterIdentifier'] = cluster_identifier  # this is replaced later with the value returned from AWS. Here now to show the user our intention
+    params['DBClusterIdentifier'] = cluster_identifier
+    # this is replaced later with the value returned from AWS. Here now to show the user our intention
     params['Engine'] = engine
     params['DBInstanceClass'] = db_instance_class
 
@@ -109,7 +113,8 @@ def create_clone_cluster_and_instance(clone_params: dict, instance_params: dict,
     click.echo(json.dumps(clone_params, indent=4, sort_keys=True))
 
     if interactive:
-        click.confirm('{} Ready to create cluster clone and instance with these settings?'.format(log_prefix()), abort=True)  # exits entirely if no
+        click.confirm('{} Ready to create cluster clone and instance with these settings?'.format(log_prefix()),
+                      abort=True)  # exits entirely if no
 
     click.echo('{} Creating copy-on-write clone...'.format(log_prefix()))
     response = rds.restore_db_cluster_to_point_in_time(**clone_params)
@@ -136,10 +141,13 @@ def create_clone_cluster_and_instance(clone_params: dict, instance_params: dict,
 @click.option('--tag', '-t', multiple=True)
 @click.option('--minimum-age-hours', '-h', default=20, type=float)
 @click.option('--interactive', '-i', default=True, type=bool)
+@click.option('--db-cluster-parameter-group-name', '-cpgn')
 @click.option('--db-parameter-group-name', '-pgn')
 @click.option('--suffix', '-sf', default=None)
-def clone(aws_account_number: str, region: str, source_cluster_name: str, managed_name: str, db_subnet_group_name: str, db_instance_class: str,
-          engine: str, availability_zone: str, vpc_security_group_id: list, tag: list, minimum_age_hours: int, interactive: bool, db_parameter_group_name: str, suffix: str):
+def clone(aws_account_number: str, region: str, source_cluster_name: str, managed_name: str, db_subnet_group_name: str,
+          db_instance_class: str,
+          engine: str, availability_zone: str, vpc_security_group_id: list, tag: list, minimum_age_hours: int,
+          interactive: bool, db_cluster_parameter_group_name: str, db_parameter_group_name: str, suffix: str):
     click.echo('{} Starting aurora-echo for {}'.format(log_prefix(), managed_name))
     util = EchoUtil(region, aws_account_number)
     if not util.instance_too_new(managed_name, minimum_age_hours):
@@ -155,9 +163,13 @@ def clone(aws_account_number: str, region: str, source_cluster_name: str, manage
             tag_set.extend(user_tags)
 
         # collect parameters up front so we only have to prompt the user once
-        cluster_params = collect_clone_params(source_cluster_name, restore_cluster_name, db_subnet_group_name, vpc_security_group_id, tag_set)
-        instance_params = collect_instance_params(restore_cluster_name, restore_cluster_name, engine, db_instance_class, availability_zone, tag_set, db_parameter_group_name)  # instance and cluster names are the same
+        cluster_params = collect_clone_params(source_cluster_name, restore_cluster_name, db_subnet_group_name,
+                                              db_cluster_parameter_group_name, vpc_security_group_id, tag_set)
+        instance_params = collect_instance_params(restore_cluster_name, restore_cluster_name, engine, db_instance_class,
+                                                  availability_zone, tag_set,
+                                                  db_parameter_group_name)  # instance and cluster names are the same
         create_clone_cluster_and_instance(cluster_params, instance_params, interactive)
 
     else:
-        click.echo('{} Found managed instance created less than {} hours ago. Not proceeding.'.format(log_prefix(), minimum_age_hours))
+        click.echo('{} Found managed instance created less than {} hours ago. Not proceeding.'.format(log_prefix(),
+                                                                                                      minimum_age_hours))
