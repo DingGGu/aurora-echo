@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 ##
 
-import os
+import sys
 
 import boto3
 import click
@@ -107,4 +107,4 @@ def modify(aws_account_number: str, region: str, managed_name: str, iam_role_nam
             click.echo('{} Cluster {} does not have status \'available\'. Not proceeding.'.format(log_prefix(), cluster_identifier))
     else:
         click.echo('{} No instance found in stage {}. Not proceeding.'.format(log_prefix(), ECHO_NEW_STAGE))
-        os.exit(1)
+        sys.exit(1)
