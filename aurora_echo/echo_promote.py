@@ -23,7 +23,7 @@
 ##
 
 import json
-import os
+import sys
 
 import boto3
 import click
@@ -126,4 +126,4 @@ def promote(aws_account_number: str, region: str, managed_name: str, hosted_zone
         click.echo('{} Done!'.format(log_prefix()))
     else:
         click.echo('{} No instance found in stage {} with status \'available\'. Not proceeding.'.format(log_prefix(), ECHO_MODIFY_STAGE))
-        os.exit(1)
+        sys.exit(1)
