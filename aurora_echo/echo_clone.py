@@ -93,6 +93,7 @@ def collect_instance_params(cluster_identifier: str, new_instance_name: str, eng
     # this is replaced later with the value returned from AWS. Here now to show the user our intention
     params['Engine'] = engine
     params['DBInstanceClass'] = db_instance_class
+    params['AutoMinorVersionUpgrade'] = False
 
     # Optional params
     if availability_zone:
