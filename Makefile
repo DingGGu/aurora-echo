@@ -1,9 +1,6 @@
 PYTHON_MAIN=aurora_echo/__init__.py
 FINAL_EXECUTABLE=aurora-echo
 BUILD_DIR=build
-VIRTUALENV=$(BUILD_DIR)/_virtualenv
-VIRTUALENV_BIN=$(VIRTUALENV)/bin
-ACTIVATE=$(VIRTUALENV_BIN)/activate
 PYTHON_INTERPRETER=python3
 
 .PHONY: all clean build lint
@@ -17,7 +14,7 @@ clean:
 	@echo "Build directory removed."
 
 build:
-	rm -f $(BUILD_DIR)/$(FINAL_EXECUTABLE)
+	#rm -f $(BUILD_DIR)/$(FINAL_EXECUTABLE)
 	pipenv install --deploy
 	python eggsecute.py $(PYTHON_MAIN) $(BUILD_DIR)/$(FINAL_EXECUTABLE)
 	chmod a+x $(BUILD_DIR)/$(FINAL_EXECUTABLE)
