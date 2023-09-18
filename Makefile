@@ -10,4 +10,4 @@ build:
 release:
 	pipenv install --deploy --dev
 	pipenv run pyinstaller aurora_echo.spec
-	shasum -a 256 dist/aurora_echo | cut -d ' ' -f 1 > dist/aurora_echo-shasum-256.txt
+	shasum -a 256 dist/aurora_echo | cut -d ' ' -f 1 > dist/aurora_echo.sha256
