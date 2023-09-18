@@ -1,0 +1,27 @@
+name: Package Aurora Echo
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Packaging
+      run: |
+        pip install pipenv
+        make release
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: aurora-echo
+        path: dist/*

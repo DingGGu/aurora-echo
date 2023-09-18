@@ -10,6 +10,7 @@ certifi = "*"
 click = "==6.6"
 
 [dev-packages]
+pyinstaller = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"

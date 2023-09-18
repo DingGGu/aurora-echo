@@ -1,24 +1,14 @@
-PYTHON_MAIN=aurora_echo/__init__.py
-FINAL_EXECUTABLE=aurora-echo
-BUILD_DIR=build
-PYTHON_INTERPRETER=python3
+.PHONY: build
 
-.PHONY: all clean build lint
-
-all: clean build
+all: build
 
 clean:
-	@rm -rf *.pyc
-	@echo "Project .pyc's removed."
-	@rm -rf $(BUILD_DIR)
-	@echo "Build directory removed."
 
 build:
-	#rm -f $(BUILD_DIR)/$(FINAL_EXECUTABLE)
 	pipenv install --deploy
-	python eggsecute.py $(PYTHON_MAIN) $(BUILD_DIR)/$(FINAL_EXECUTABLE)
-	chmod a+x $(BUILD_DIR)/$(FINAL_EXECUTABLE)
-	echo "Package created."
+	pipenv run pyinstaller --onefile aurora_echo.py
 
-lint:
-	python setup.py flake8
+release:
+	pipenv install --deploy
+	pipenv run pyinstaller aurora_echo.spec
+	shasum -a 256 dist/aurora_echo | cut -d ' ' -f 1 > dist/aurora_echo-shasum-256.txt
